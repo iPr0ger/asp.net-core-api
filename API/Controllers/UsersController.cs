@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using API.DTOs;
+using API.Extensions;
+using API.Helpers;
 using API.Interfaces;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
@@ -14,17 +16,26 @@ namespace API.Controllers
     {
         private readonly IUserRepository _userRepository;
         private readonly IMapper _mapper;
+        private readonly IMessageRepository _messageRepository;
 
-        public UsersController(IUserRepository userRepository, IMapper mapper)
+        public UsersController(IUserRepository userRepository, 
+            IMapper mapper, IMessageRepository messageRepository)
         {
             _mapper = mapper;
             _userRepository = userRepository;
+            _messageRepository = messageRepository;
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers(
+            [FromQuery]UserParams userParams)
         {
-            return Ok(await _userRepository.GetMembersAsync());
+            var users = await _userRepository.GetMembersAsync(userParams);
+            
+            Response.AddPaginationHeader(users.CurrentPage, users.PageSize, 
+                users.TotalCount, users.TotalPages);
+            
+            return Ok(users);
         }
 
         [HttpGet("{username}")]
