@@ -11,7 +11,7 @@ namespace API.Controllers
         private readonly DataContext _context;
         public BuggyController(DataContext context)
         {
-            _context = context;
+            _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
         [Authorize]
@@ -42,6 +42,5 @@ namespace API.Controllers
         {
             return BadRequest("This was not a good request!");
         }
-
     }
 }
